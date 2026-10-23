@@ -10,12 +10,10 @@ public sealed record PdfRequest
     /// <summary>Paper format. Defaults to A4.</summary>
     public PaperSize PaperSize { get; init; } = PaperSize.A4;
 
-    /// <summary>Page width in millimeters. Required for Thermal and Custom; ignored for every other paper size (preset width is used).</summary>
-    [Range(10, 1000)]
+    /// <summary>Page width in millimeters. Required for Thermal and Custom (10-1000); ignored for every other paper size (preset width is used).</summary>
     public double? WidthMm { get; init; }
 
-    /// <summary>Page height in millimeters. Required for Custom only; ignored for every other paper size (thermal formats fit the content height).</summary>
-    [Range(10, 5000)]
+    /// <summary>Page height in millimeters. Required for Custom only (10-5000); ignored for every other paper size (thermal formats fit the content height).</summary>
     public double? HeightMm { get; init; }
 
     /// <summary>Renders sheet formats in landscape orientation.</summary>

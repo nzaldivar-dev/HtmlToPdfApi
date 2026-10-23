@@ -37,7 +37,7 @@ Content-Type: application/json
 
 { "html": "x", "paperSize": "Custom" }
 
-### Error 400 validation-error: widthMm fuera de rango
+### Error 400 invalid-request: widthMm fuera de rango (solo se valida en Thermal/Custom)
 POST {{HtmlToPdfApi_HostAddress}}/api/pdf
 Content-Type: application/json
 
@@ -60,3 +60,9 @@ POST {{HtmlToPdfApi_HostAddress}}/api/pdf
 Content-Type: text/plain
 
 x
+
+### Thermal80 ignora widthMm/heightMm (200)
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "<h1>Hola</h1>", "paperSize": "Thermal80", "widthMm": 0, "heightMm": 0 }

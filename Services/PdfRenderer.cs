@@ -17,6 +17,15 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
             GlobalFontSettings.UseWindowsFontsUnderWindows = true;
     }
 
+    // Width/height are only meaningful for Thermal/Custom, so their range is checked here instead of with [Range] on the request.
+    private static double RequireInRange(double? value, string name, double min, double max) =>
+        value switch
+        {
+            null => throw new InvalidPdfRequestException($"{name} is required for this paper size."),
+            var v when v < min || v > max => throw new InvalidPdfRequestException($"{name} must be between {min} and {max}."),
+            var v => v.Value
+        };
+
     public async Task<PdfResponse> RenderAsync(PdfRequest req, CancellationToken ct)
     {
         var stopwatch = Stopwatch.StartNew();
@@ -38,13 +47,13 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
             {
                 PaperSize.Thermal80 => 80,
                 PaperSize.Thermal58 => 58,
-                _ => req.WidthMm ?? throw new InvalidPdfRequestException("WidthMm is required for this paper size.")
+                _ => RequireInRange(req.WidthMm, "WidthMm", 10, 1000)
             };
             var widthPt = widthMm * PtPerMm;
             autoHeight = thermal;
             heightPt = thermal
                 ? MeasureHeight(req.Html, cssData, widthPt, pdfConfig) // ticket continuo: alto = contenido
-                : (req.HeightMm ?? throw new InvalidPdfRequestException("HeightMm is required for Custom paper.")) * PtPerMm;
+                : RequireInRange(req.HeightMm, "HeightMm", 10, 5000) * PtPerMm;
 
             // HtmlRenderer intercambia las medidas si ancho > alto, asi que el alto minimo es el ancho.
             pdfConfig.ManualPageSize = new XSize(widthPt, Math.Clamp(heightPt, widthPt + 1, MaxPageHeightPt));
