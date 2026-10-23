@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Fonts;
@@ -5,7 +6,7 @@ using PdfSharp.Pdf;
 using TheArtOfDev.HtmlRenderer.Core;
 using TheArtOfDev.HtmlRenderer.PdfSharp;
 
-public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfiguration config) : IPdfRenderer
+public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfiguration config, ILogger<PdfRenderer> logger) : IPdfRenderer
 {
     const double PtPerMm = 72.0 / 25.4;
     const double MaxPageHeightPt = 14400; // limite de PDF (200 in)
@@ -18,6 +19,7 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
 
     public async Task<PdfResponse> RenderAsync(PdfRequest req, CancellationToken ct)
     {
+        var stopwatch = Stopwatch.StartNew();
         var css = await LoadStyleSheetsAsync(req.StyleSheetUrls, ct);
         var cssData = css.Length > 0 ? PdfGenerator.ParseStyleSheet(css) : null;
 
@@ -68,6 +70,7 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
         {
             doc.Dispose();
             heightPt = Math.Min(heightPt * 1.05 + 20, MaxPageHeightPt);
+            logger.LogDebug("Thermal content overflowed one page; retrying with height {HeightPt:F1}pt (attempt {Attempt})", heightPt, i + 1);
             pdfConfig.ManualPageSize = new XSize(pdfConfig.ManualPageSize.Width, heightPt);
             doc = PdfGenerator.GeneratePdf(req.Html, pdfConfig, cssData);
         }
@@ -80,7 +83,12 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
         using var ms = new MemoryStream();
         doc.Save(ms, false);
 
-        return new PdfResponse(Convert.ToBase64String(ms.ToArray()), pages, wMm, hMm);
+        // Never log the HTML itself: it can be large and carry customer data.
+        logger.LogInformation(
+            "PDF generated: {PaperSize} {WidthMm}x{HeightMm}mm, {Pages} page(s), {SizeBytes} bytes, {HtmlLength} HTML chars, {StyleSheetCount} stylesheet(s), {ElapsedMs} ms",
+            paper, wMm, hMm, pages, ms.Length, req.Html.Length, req.StyleSheetUrls?.Length ?? 0, stopwatch.ElapsedMilliseconds);
+
+        return new PdfResponse("data:application/pdf;base64," + Convert.ToBase64String(ms.ToArray()), "pdf", ms.Length, pages, wMm, hMm);
     }
 
     /// <summary>Calcula el alto del contenido para un ticket continuo.</summary>
@@ -118,9 +126,11 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
             try
             {
                 parts.Add(await http.GetStringAsync(uri, ct));
+                logger.LogDebug("Downloaded stylesheet {StyleSheetUrl}", uri);
             }
             catch (Exception ex) when (ex is HttpRequestException || (ex is TaskCanceledException && !ct.IsCancellationRequested))
             {
+                logger.LogWarning("Could not download stylesheet {StyleSheetUrl}: {Reason}", uri, ex.Message);
                 throw new InvalidPdfRequestException($"Could not download stylesheet '{raw}'.");
             }
         }

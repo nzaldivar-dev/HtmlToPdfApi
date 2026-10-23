@@ -1,6 +1,6 @@
 @HtmlToPdfApi_HostAddress = http://localhost:5072
 
-### Ticket termico 80mm (alto automatico)
+### Ticket termico 80mm (alto automatico) con hoja de estilos por URL
 POST {{HtmlToPdfApi_HostAddress}}/api/pdf
 Content-Type: application/json
 
@@ -10,8 +10,50 @@ Content-Type: application/json
   "styleSheetUrls": ["https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.css"]
 }
 
-### Hoja A4
+### Ticket termico 58mm
 POST {{HtmlToPdfApi_HostAddress}}/api/pdf
 Content-Type: application/json
 
-{ "html": "<h1>Hola</h1>", "paperSize": "A4" }
+{ "html": "<p>Ticket angosto</p>", "paperSize": "Thermal58" }
+
+### Hoja A4 horizontal con margen de 15 mm
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "<h1>Hola</h1>", "paperSize": "A4", "landscape": true, "marginMm": 15 }
+
+### Tamano personalizado (100 x 150 mm)
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "<h2>Etiqueta</h2>", "paperSize": "Custom", "widthMm": 100, "heightMm": 150 }
+
+### Error 400 invalid-request: Custom sin widthMm
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "x", "paperSize": "Custom" }
+
+### Error 400 validation-error: widthMm fuera de rango
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "x", "paperSize": "Custom", "widthMm": 5, "heightMm": 100 }
+
+### Error 400 malformed-body: paperSize desconocido
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "x", "paperSize": "Foo" }
+
+### Error 400 invalid-request: hoja de estilos con esquema no permitido
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "x", "styleSheetUrls": ["ftp://example.com/estilo.css"] }
+
+### Error 415: tipo de contenido no soportado
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: text/plain
+
+x

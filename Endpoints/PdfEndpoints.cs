@@ -8,8 +8,9 @@ public static class PdfEndpoints
                 TypedResults.Ok(await renderer.RenderAsync(request, cancellationToken)))
             .WithName("GeneratePdf")
             .WithSummary("Generate a PDF from HTML")
-            .WithDescription("Renders the HTML (plus optional stylesheets) on the requested paper size or thermal ticket and returns the PDF as base64. Nothing is written to disk.")
+            .WithDescription("Renders the HTML (plus optional stylesheets) on the requested paper size or thermal ticket and returns the PDF as a base64 Data URL with its extension and size. Nothing is written to disk.")
             .Produces<PdfResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
     }
 }
