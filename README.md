@@ -30,8 +30,8 @@ Escucha en `http://localhost:5072` (sin HTTPS ni autenticación, solo para uso l
 |-------|------|-------------|
 | `html` | string, requerido | Contenido HTML a renderizar. |
 | `paperSize` | string | `A3`, `A4` (por defecto), `A5`, `Letter`, `Legal`, `Thermal80`, `Thermal58`, `Thermal`, `Custom`. No distingue mayúsculas. |
-| `widthMm` | número | Ancho en mm (10–1000). Requerido para `Thermal` y `Custom`; en los demás formatos térmicos sustituye el ancho predefinido. |
-| `heightMm` | número | Alto en mm (10–5000). Requerido para `Custom`. En formatos térmicos, si se omite el alto se ajusta al contenido. |
+| `widthMm` | número | Ancho en mm (10–1000). Requerido para `Thermal` y `Custom`; se ignora en los demás formatos (se usa el tamaño predefinido). |
+| `heightMm` | número | Alto en mm (10–5000). Requerido solo para `Custom`; se ignora en los demás formatos (los térmicos ajustan el alto al contenido). |
 | `landscape` | bool | Orientación horizontal para hojas. |
 | `marginMm` | número | Margen en mm (0–50). Por defecto 10 en hojas y 2 en tickets. |
 | `styleSheetUrls` | string[] | URLs `http`/`https` de hojas de estilo que se descargan y se aplican. |

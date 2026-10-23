@@ -36,17 +36,15 @@ public sealed class PdfRenderer(IHttpClientFactory httpClientFactory, IConfigura
         {
             var widthMm = paper switch
             {
-                PaperSize.Thermal80 => req.WidthMm ?? 80,
-                PaperSize.Thermal58 => req.WidthMm ?? 58,
+                PaperSize.Thermal80 => 80,
+                PaperSize.Thermal58 => 58,
                 _ => req.WidthMm ?? throw new InvalidPdfRequestException("WidthMm is required for this paper size.")
             };
             var widthPt = widthMm * PtPerMm;
-            autoHeight = req.HeightMm is null && thermal;
-            heightPt = req.HeightMm is { } h
-                ? h * PtPerMm
-                : thermal
-                    ? MeasureHeight(req.Html, cssData, widthPt, pdfConfig) // ticket continuo: alto = contenido
-                    : throw new InvalidPdfRequestException("HeightMm is required for Custom paper.");
+            autoHeight = thermal;
+            heightPt = thermal
+                ? MeasureHeight(req.Html, cssData, widthPt, pdfConfig) // ticket continuo: alto = contenido
+                : (req.HeightMm ?? throw new InvalidPdfRequestException("HeightMm is required for Custom paper.")) * PtPerMm;
 
             // HtmlRenderer intercambia las medidas si ancho > alto, asi que el alto minimo es el ancho.
             pdfConfig.ManualPageSize = new XSize(widthPt, Math.Clamp(heightPt, widthPt + 1, MaxPageHeightPt));

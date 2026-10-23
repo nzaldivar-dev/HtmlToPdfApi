@@ -11,11 +11,11 @@ public enum PaperSize
     Letter,
     /// <summary>US Legal sheet.</summary>
     Legal,
-    /// <summary>80 mm thermal ticket; height fits the content unless HeightMm is set.</summary>
+    /// <summary>80 mm thermal ticket; height fits the content.</summary>
     Thermal80,
-    /// <summary>58 mm thermal ticket; height fits the content unless HeightMm is set.</summary>
+    /// <summary>58 mm thermal ticket; height fits the content.</summary>
     Thermal58,
-    /// <summary>Thermal ticket with a custom WidthMm; height fits the content unless HeightMm is set.</summary>
+    /// <summary>Thermal ticket with a custom WidthMm; height fits the content.</summary>
     Thermal,
     /// <summary>Fixed size given by WidthMm and HeightMm.</summary>
     Custom
