@@ -1,5 +1,8 @@
 @HtmlToPdfApi_HostAddress = http://localhost:5072
 
+### Health check (200 "Healthy")
+GET {{HtmlToPdfApi_HostAddress}}/health
+
 ### Ticket termico 80mm (alto automatico) con hoja de estilos por URL
 POST {{HtmlToPdfApi_HostAddress}}/api/pdf
 Content-Type: application/json

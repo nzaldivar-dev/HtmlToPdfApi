@@ -32,6 +32,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddHttpClient("stylesheets", c => c.Timeout = TimeSpan.FromSeconds(15));
 builder.Services.AddSingleton<IPdfRenderer, PdfRenderer>();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -55,6 +56,7 @@ app.UseSwaggerUI(options =>
 });
 
 app.MapPdf();
+app.MapHealth();
 
 try
 {
