@@ -6,7 +6,7 @@ El PDF se genera en memoria: no se escribe ningún archivo en disco.
 
 ## Tecnología
 
-- [PDFsharp](https://docs.pdfsharp.net/) 6.2.4 para generar el PDF.
+- [PDFsharp](https://docs.pdfsharp.net/) 6.5.0 para generar el PDF. Desde esta versión exige elegir licencia; el proyecto usa la **AGPL** (`PdfSharpLicense.SetAgplLicense()` en `Program.cs`). Si el servicio forma parte de un producto cerrado, valida las implicaciones de la AGPL o adquiere una licencia comercial (`PdfSharpLicense.LoadLicense`).
 - [HtmlRenderer.PdfSharp](https://www.nuget.org/packages/HtmlRenderer.PdfSharp) 1.6.1 para interpretar el HTML, porque PDFsharp por sí solo no lee HTML.
 
 ## Requisitos
@@ -20,7 +20,7 @@ El PDF se genera en memoria: no se escribe ningún archivo en disco.
 dotnet run
 ```
 
-Escucha en `http://localhost:5072` (sin HTTPS ni autenticación, solo para uso local). En Development, el documento OpenAPI está en `/openapi/v1.json`. `HtmlToPdfApi.http` contiene ejemplos listos para ejecutar.
+Escucha en `http://localhost:5072` (sin HTTPS ni autenticación, solo para uso local). Swagger UI está en `http://localhost:5072/swagger` y el documento OpenAPI en `/openapi/v1.json` (ambos en todos los entornos). `HtmlToPdfApi.http` contiene ejemplos listos para ejecutar.
 
 ## Endpoint
 
@@ -74,4 +74,3 @@ Opcional, en `appsettings.json`: restringir los hosts desde los que se pueden de
 - HtmlRenderer soporta HTML 4 y CSS 2.1: no hay flexbox, grid ni otras características de CSS3 moderno.
 - Un ticket muy corto sale con alto mínimo igual a su ancho (por ejemplo 80 × 80.4 mm).
 - El alto máximo de página es 5080 mm (límite de PDF); un contenido más largo se parte en varias páginas.
-- `dotnet build` muestra los avisos NU1902/NU1903 de `System.Security.Cryptography.Pkcs`, dependencia transitiva de HtmlRenderer.

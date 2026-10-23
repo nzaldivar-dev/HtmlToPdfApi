@@ -10,16 +10,18 @@ Local-only ASP.NET Core (net10.0) Minimal API that converts HTML to PDF and retu
 
 ```
 dotnet build
-dotnet run                      # http://localhost:5072, OpenAPI at /openapi/v1.json (Development only)
+dotnet run                      # http://localhost:5072, Swagger UI at /swagger, OpenAPI at /openapi/v1.json (all environments)
 ```
 
 `HtmlToPdfApi.http` has sample requests for the single endpoint, `POST /api/pdf`. There is no test project.
 
-`dotnet build` always prints NU1902/NU1903 for `System.Security.Cryptography.Pkcs` 8.0.1, a transitive dependency of HtmlRenderer; pinning 10.0.10 did not clear it, so they are deliberately left in.
+`System.Security.Cryptography.Pkcs` is referenced directly (10.0.13) only to override the vulnerable 8.0.1 that HtmlRenderer pulls in transitively (NU1902/NU1903); keep it.
+
+`dotnet build` fails with MSB3021/MSB3027 (cannot copy `HtmlToPdfApi.exe`) if the API is still running; stop it first.
 
 ## Architecture
 
-- **PDFsharp cannot parse HTML.** HTML rendering comes from `HtmlRenderer.PdfSharp` (HTML 4 / CSS 2.1 only — no flexbox/grid), which drives PDFsharp 6.2.4. `PdfRenderer` (`Services/PdfRenderer.cs`) is the only place that touches either library.
+- **PDFsharp cannot parse HTML.** HTML rendering comes from `HtmlRenderer.PdfSharp` (HTML 4 / CSS 2.1 only — no flexbox/grid), which drives PDFsharp. `PDFsharp` 6.5.0 is referenced directly (HtmlRenderer only asks for 6.2.4) and, since 6.5.0, a license must be selected before any `PdfDocument` is created — `Program.cs` calls `SetAgplLicense()`; without it every render throws `PdfSharpLicenseException`. Swagger UI is `Swashbuckle.AspNetCore.SwaggerUI` only, pointed at the built-in `AddOpenApi()` document (no Swashbuckle generator, which is incompatible with .NET 10 OpenAPI types). `PdfRenderer` (`Services/PdfRenderer.cs`) is the only place that touches either library.
 - `Program.cs` wires DI and `Endpoints/PdfEndpoints.cs` (`MapPdf`); the handler only forwards to `IPdfRenderer`. Add new endpoints as one static `Map<Resource>` class per resource.
 - Caller-facing errors: throw `InvalidPdfRequestException` from the service (message is shown to the caller). `Middleware/ApiExceptionHandler.cs` turns it, and framework `BadHttpRequestException` (bad enum/missing field), into 400 Problem Details; anything else falls through to a 500. `[Required]`/`[Range]` on `PdfRequest` are enforced via `AddValidation()`.
 - Enums serialize as strings (`JsonStringEnumConverter`). Case-sensitive/strict JSON options were intentionally *not* enabled, so PascalCase callers keep working.

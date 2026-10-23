@@ -1,5 +1,8 @@
 using System.Text.Json.Serialization;
 
+// PDFsharp 6.5.0+ requires choosing a license before creating any document.
+PdfSharp.PdfSharpLicense.SetAgplLicense();
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
@@ -16,10 +19,13 @@ var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 
-if (app.Environment.IsDevelopment())
+// Docs are available in every environment: the API is internal and its callers need the contract.
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
 {
-    app.MapOpenApi();
-}
+    options.SwaggerEndpoint("/openapi/v1.json", "HtmlToPdfApi v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.MapPdf();
 
