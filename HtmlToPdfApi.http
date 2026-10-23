@@ -1,0 +1,17 @@
+@HtmlToPdfApi_HostAddress = http://localhost:5072
+
+### Ticket termico 80mm (alto automatico)
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{
+  "html": "<h3 style='text-align:center'>TICKET #1</h3><p>Item A ..... $10.00</p><hr/><b>Total $15.00</b>",
+  "paperSize": "Thermal80",
+  "styleSheetUrls": ["https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.css"]
+}
+
+### Hoja A4
+POST {{HtmlToPdfApi_HostAddress}}/api/pdf
+Content-Type: application/json
+
+{ "html": "<h1>Hola</h1>", "paperSize": "A4" }
